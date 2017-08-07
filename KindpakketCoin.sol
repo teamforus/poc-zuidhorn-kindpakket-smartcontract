@@ -21,17 +21,36 @@ contract KindpakketCoin {
         }
     }
     
+    // the contract owner uses this function to disapprove shopkeepers
+    function disapproveShop(address shopkeeper) {
+        if (msg.sender == owner) {
+            shopKeeper[shopkeeper] = false;
+        }
+    }
+    
     // this function can only be called by shopkeepers to subtract from token holders
     function recievePayment(address from, uint256 value) {
-        if (shopKeeper[msg.sender] == true) {
-            balanceOf[from] -= value;               
-            balanceOf[msg.sender] += value;
-        }
+        if (shopKeeper[msg.sender] == false) throw;
+        if (balanceOf[from] < value) throw;
+        if (balanceOf[msg.sender] + value < balanceOf[msg.sender]) throw;
+        
+        balanceOf[from] -= value;          
+        balanceOf[msg.sender] += value;
+    }
+    
+    // this function can only be called by shopkeepers to refund to token holders
+    function refundPayment(address to, uint256 value) {
+        if (shopKeeper[msg.sender] == false) throw;
+        if (balanceOf[msg.sender] < value) throw;
+        if (balanceOf[to] + value < balanceOf[to]) throw;
+            
+        balanceOf[to] += value;     
+        balanceOf[msg.sender] -= value;
     }
     
     // here we initialize the contract and set the initial supply
     function KindpakketCoin(uint256 initialSupply) {
         owner = msg.sender;
-        balanceOf[msg.sender] = initialSupply;
+        balanceOf[msg.sender] = initialSupply; // Give the creator all initial tokens
     }
 }
